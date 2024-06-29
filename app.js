@@ -31,6 +31,7 @@ app.use('*', (req, res, next) => {
     message: `Cannot find ${req.originalUrl} on the server`,
   });
 });
+
 app.post('/api/user/logout', (req, res) => {
   res.clearCookie('jwt');
   res.status(200).json({
