@@ -30,6 +30,8 @@ const generateTokenAndSend = (user, status, res, message = undefined) => {
       data: user,
     },
   });
+
+  console.log(token);
 };
 
 exports.signUp = catchAsync(async (req, res, next) => {
@@ -124,6 +126,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
     // Check if the user still exists
     const checkUser = await User.findById(decoded.id);
+    console.log(checkUser);
     if (!checkUser) {
       return next(new AppError('User no longer exists', 401));
     }
