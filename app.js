@@ -14,7 +14,11 @@ const GlobalErrorHandlingMiddleWare = require('./middlewares/globalError');
 
 app.use(sanitizer());
 app.use(clean());
-app.use(morgan('dev'));
+
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
 app.use(cookie());
 // app.use(bodyParser())
 app.use(express.json());
