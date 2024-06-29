@@ -18,7 +18,7 @@ module.exports = class SendMail {
     this.username = user.username;
     this.url = url;
     this.to = user.email;
-    this.from = `KTC Broker <${EMAIL_FROM}>`;
+    this.from = `NACOSS Project <${EMAIL_FROM}>`;
   }
 
   mailTransport() {
