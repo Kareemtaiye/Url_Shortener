@@ -22,10 +22,10 @@ const checkUrlExists = async url => {
     // console.log(res);
     if (res.status !== 404) return true;
   } catch (error) {
-    if (error.code === 'ENOTFOUND') {
+    console.log(error);
+    if (error.message && error.message.includes('Network Error')) {
       return 'network error';
     }
-    console.log(error);
     return false;
   }
 };
@@ -56,6 +56,12 @@ exports.generateUlr = catchAsync(async (req, res, next) => {
       new AppError(`The provided url "${url}" does not exist!!`, 404),
     );
   }
+  const lookUpUserUrl = await User.findById(req.user._id).populate('urls');
+  if (lookUpUserUrl.urls.find(el => el.url === url)) {
+    return next(
+      new AppError(`The provided url has already been shortened`, 400),
+    );
+  }
 
   let id = shortId.generate();
   const lookUpID = await Url.findOne({ generated_id: id });
@@ -63,16 +69,6 @@ exports.generateUlr = catchAsync(async (req, res, next) => {
   if (lookUpID) {
     id = shortId();
   }
-
-  await User.findById(req.user._id).populate('urls');
-
-  // console.log(lookUpUserUrl);
-
-  // if (lookUpUserUrl) {
-  //   return next(
-  //     new AppError(`The provided url has already been shortened`, 400),
-  //   );
-  // }
 
   const redirect_url = `${req.protocol}://${req.get('host')}/${id}`;
 

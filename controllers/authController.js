@@ -4,6 +4,7 @@ const catchAsync = require('../utilities/catchAsync');
 const AppError = require('../utilities/AppError');
 const Email = require('../utilities/email');
 const { promisify } = require('util');
+const crypto = require('crypto');
 
 const { JWT_SECRET_KEY, JWT_EXPIRES_IN, COOKIE_EXPIRES_IN, NODE_ENV } =
   process.env;
@@ -42,7 +43,7 @@ exports.signUp = catchAsync(async (req, res, next) => {
   });
 
   const verifyToken = user?.createEmailVerificationToken();
-  const url = `${req.protocol}://${req.get('host')}/api/verify/${verifyToken}`;
+  const url = `${req.protocol}://${req.get('host')}/api/user/verify/${verifyToken}`;
 
   await new Email(user, url).verifyEmail();
   await user.save({ validateBeforeSave: false });
@@ -79,6 +80,10 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
   user.verifyEmailTokenExpiresIn = undefined;
 
   await user.save({ validateBeforeSave: false });
+  res.status(200).json({
+    status: 'success',
+    message: 'Enail verified successfully',
+  });
 });
 
 exports.logIn = async (req, res, next) => {
@@ -89,9 +94,7 @@ exports.logIn = async (req, res, next) => {
     return next(new AppError('Please provide your email and password', 400));
   }
 
-  const user = await User.findOne({ email })
-    .populate('urls')
-    .select('+password');
+  const user = await User.findOne({ email }).select('+password');
   console.log('user', user);
 
   //compare the incoming password with the saved password
@@ -147,7 +150,8 @@ exports.forgotPassword = async (req, res, next) => {
   }
   try {
     const token = user?.createPasswordResetToken();
-    const url = `${req.protocol}://${req.get('host')}/reset-password/${token}`;
+    const url = `${req.protocol}://${req.get('host')}/api/user/reset-password/${token}`;
+
     await new Email(user, url).resetPasswordMail();
     await user.save({ validateBeforeSave: false });
   } catch (err) {
@@ -166,7 +170,7 @@ exports.forgotPassword = async (req, res, next) => {
 };
 exports.resetPassword = async (req, res, next) => {
   const { password, password_confirm } = req.body;
-  if (!password || !passwordConfirm) {
+  if (!password || !password_confirm) {
     return next(
       new AppError('Please provide your password and confirm password', 400),
     );
@@ -182,10 +186,17 @@ exports.resetPassword = async (req, res, next) => {
     passwordResetTokenExpiresIn: { $gt: Date.now() },
   });
 
+  console.log('user', user);
+
   if (!user) {
     return next(new AppError('Token is Invalid or expired', 400));
   }
 
+  if (password !== password_confirm) {
+    return next(
+      new AppError('Password and confirm password are not the same', 400),
+    );
+  }
   //set the password in the database with the new password
   user.password = req.body.password;
   user.password_confirm = req.body.password_confirm;
@@ -193,4 +204,8 @@ exports.resetPassword = async (req, res, next) => {
   user.passwordResetTokenExpiresIn = undefined;
   //save to update it
   await user.save({ validateBeforeSave: false });
+  res.status(201).json({
+    status: 'success',
+    message: 'Password Reset Successfully',
+  });
 };

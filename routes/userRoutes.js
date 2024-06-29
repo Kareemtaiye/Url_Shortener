@@ -10,6 +10,9 @@ router.post('/verify/:token', authController.verifyEmail);
 router.get('/forgot-password', authController.forgotPassword);
 router.post('/reset-password/:token', authController.resetPassword);
 
-router.route('/me').get(authController.protect, userController.getMe);
+router
+  .route('/me')
+  .get(authController.protect, userController.getMe)
+  .patch(authController.protect, userController.updateMe);
 
 module.exports = router;

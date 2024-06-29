@@ -20,7 +20,7 @@ const urlSchema = new mongoose.Schema({
 });
 
 urlSchema.pre('save', async function (next) {
-  const found = await User.findByIdAndUpdate(
+  await User.findByIdAndUpdate(
     this.user,
     {
       $addToSet: { urls: this._id },
@@ -30,7 +30,6 @@ urlSchema.pre('save', async function (next) {
       useFindAndModify: false,
     },
   );
-  console.log(found);
   next();
 });
 
