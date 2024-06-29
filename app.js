@@ -22,6 +22,14 @@ app.use(cookie());
 // app.use(bodyParser())
 app.use(express.json());
 
+app.post('/api/user/logout', (req, res) => {
+  res.clearCookie('jwt');
+  res.status(200).json({
+    status: 'success',
+    message: 'Logged Out',
+  });
+});
+
 app.use('/', urlRouter);
 app.use('/api/user', userRouter);
 
@@ -29,14 +37,6 @@ app.use('*', (req, res, next) => {
   res.status(404).json({
     status: 'fail',
     message: `Cannot find ${req.originalUrl} on the server`,
-  });
-});
-
-app.post('/api/user/logout', (req, res) => {
-  res.clearCookie('jwt');
-  res.status(200).json({
-    status: 'success',
-    message: 'Logged Out',
   });
 });
 
