@@ -1,7 +1,6 @@
 const express = require('express');
 
 const app = express();
-const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const sanitizer = require('express-mongo-sanitize');
 const clean = require('xss-clean');
@@ -16,7 +15,7 @@ app.use(sanitizer());
 app.use(clean());
 
 if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
+  app.use(require('morgan')('dev'));
 }
 
 app.use(cookie());
